@@ -1,0 +1,15 @@
+
+This dataset consits of 901 sentences sampled from Polish Dependency Treebank "Skladnica" (http://zil.ipipan.waw.pl/Składnica).
+
+Selected sentences were identified as containing at least one sentiment word from sentiment dictionary from http://zil.ipipan.waw.pl/SlownikWydzwieku
+
+The sentences were verified for presence of sentiments and their targets. Many of the sentences do not contain in fact any sentiment word according to human annotator.
+
+In a sentence, there is only up to one sentiment-target pair. In consequence, there are 975 annotated sentences as some of them appear twice (eg. there are two sentence-target tuples). 
+
+Annotation of sentiments and targets is contained in the last CONLL column. Sentiment words are marked with an "S", target words with an "A". 
+
+The "isAtrRelToSent" means as follows:
+   1    - attribute/opinion target is related to / modifies sentiment word
+  -1    - no attribute word selected for sentiment word matched with an "S" 
+   0    - no sentiment word is present

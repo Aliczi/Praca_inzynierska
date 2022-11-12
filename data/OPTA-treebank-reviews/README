@@ -1,0 +1,18 @@
+
+The file contains JSON formatted results of annotation of opinions and their targets. 
+
+Each item in the list is a sentence which contains following fields:
+'file_id': ID of review (used internally, same sentence may appear multiple times with different sentiments and opinin target pairs)
+'domain': review type (perfume or clothes)
+'dist':  dependency path distance between S and T, filled only for the 1st batch of annotations
+'isSentIncorrect': human annotation - is sentiment word S incorrect?
+'isAttrIncorrect': human annotation - is opinion target word T incorrect?
+'parsedSent': CONLL-formatted parsed sentence; last column contains pointers to :
+	S = sentiment word
+	T = opinion target word
+'isStrError': human annotation - is dependency structure erroneous between S and T
+'isAtrRelToSent': human annotation - is S related to T 
+'rule_id': ID of extraction rule that pointed to T (see "extraction rules")
+
+
+
