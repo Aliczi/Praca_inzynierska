@@ -20,7 +20,7 @@ class TextRank:
             text = self._lemmatize(text)
         return keywords.keywords(text, language=self.language, words=len, split=True)
         
-    def create_dicts_for_all_classes(self, df: pd.DataFrame, target_colname = "target" , opinion_colname="text") -> dict:
+    def create_dicts_for_all_classes(self, df: pd.DataFrame, target_colname = "target" , opinion_colname="text", len=25, trainset_size=100) -> dict:
         """ Create dictionaries with keywords for every oppinion class in df. 
             Returns a dictionary in form {class0: [keyword0, keyword1, ...], ...} """
         keywords = dict()
@@ -31,23 +31,37 @@ class TextRank:
             df_filtered.drop(target_colname, axis=1)
 
             # get keywords
-            df_filtered = df_filtered[:100] #TODO: DELETE THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            df_filtered = df_filtered[:trainset_size] #TODO: DELETE THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!
             all_oppinions = df_filtered[opinion_colname].sum() # TODO: too long
-            keywords[sentiment] = self.get_keywords(all_oppinions, len=25)
+            keywords[sentiment] = self.get_keywords(all_oppinions, len=len)
 
         return keywords
 
+def save_dicts_to_files(dicts: dict):
+    for sentiment in dicts.keys():
+        filename = f"textrank_{sentiment}.txt"
+        with open(filename, 'w') as file:
+            file.write('\n'.join(dicts[sentiment]))
+        print(f"Keywords for sentiment {sentiment} written to file {filename}")
+
 if __name__ == '__main__':
+    # ADJUST PARAMETERS
+    
+    polemo_category = "hotels_text" # only opinions about hotels
+    # available categories: 'all_text', 'all_sentence', 'hotels_text', 'hotels_sentence', 'medicine_text', 'medicine_sentence',
+    # 'products_text', 'products_sentence', 'reviews_text', 'reviews_sentence'
+
+    number_of_keywords = 10
+    number_of_opinions = 10
+
     # read data from polemo
-    polemo_category = "hotels_text" # only oppinions about hotels
     polemo_official = load_dataset("data/polemo2-official/", polemo_category) 
     df_polemo_official = pd.DataFrame(polemo_official["train"])
 
     # create dictionaries
     textRank = TextRank("pl_core_news_sm")
-    dicts = textRank.create_dicts_for_all_classes(df_polemo_official)
-    print(dicts)
-
+    dicts = textRank.create_dicts_for_all_classes(df_polemo_official, len=number_of_keywords, trainset_size=number_of_opinions)
+    save_dicts_to_files(dicts)
 
 
 
