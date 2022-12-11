@@ -1,11 +1,14 @@
 import pandas as pd
 from datasets import load_dataset
+import os
 
 
 def save_dicts_to_files(dicts: dict, prefix: str):
     """dictionaries with keywords should be in form {class0: [keyword0, keyword1, ...], ...}"""
+    directory = "out"
     for sentiment in dicts:
-        filename = f"{prefix}_{sentiment}.txt"
+        filename = f"{directory}/{prefix}_{sentiment}.txt"
+        os.makedirs(directory, exist_ok=True)
         with open(filename, "w") as file:
             file.write("\n".join(dicts[sentiment]))
         print(f"Keywords for sentiment {sentiment} written to file {filename}")
@@ -45,7 +48,3 @@ def remove_shared_words(dicts: dict):
                     keywords_to_remove.add(keyword)  # don't remove yet, because more dicts can share it
         for keyword in keywords_to_remove:
             dict1.remove(keyword)
-
-
-    
-
