@@ -2,7 +2,7 @@ import pandas as pd
 from noun_chunks_pl import noun_chunks_pl
 import spacy
 import pytextrank
-from tools import load_raw_data, load_preprocessed_data, save_dicts_to_files
+from tools import *
 
 # dependencies to_ install
 # !pip install pytextrank
@@ -10,15 +10,14 @@ from tools import load_raw_data, load_preprocessed_data, save_dicts_to_files
 
 
 class TextRank:
-    def __init__(self, language_model: str):
+    def __init__(self, language_model: str, textrank_type: str = "textrank"):
         self.nlp = spacy.load(language_model)
         spacy.lang.pl.PolishDefaults.syntax_iterators = {
             "noun_chunks": self._get_chunks
         }  # noun_chunk replacement for polish
         self.nlp = spacy.load(language_model)
 
-        # IDEA: add "hotel to stopwords"
-        self.nlp.add_pipe("textrank")
+        self.nlp.add_pipe(textrank_type)
 
     def _get_chunks(self, doc):
         return noun_chunks_pl(doc)
@@ -41,13 +40,16 @@ class TextRank:
         target_colname: str = "target",
         opinion_colname: str = "text",
         len: int = 25,
-        trainset_size: int = 100,
+        trainset_size: int = None, # use only for development purposes – shorters computation
     ) -> dict:
         """Create dictionaries with keywords for every oppinion class in df.
         Returns a dictionary in form {class0: [keyword0, keyword1, ...], ...}"""
         keywords = dict()
 
-        df_filtered = df[:trainset_size]  # TODO: DELETE THIS!
+        if trainset_size:
+            df_filtered = df[:trainset_size]
+        else:
+            df_filtered = df
         df_filtered = df_filtered.groupby(target_colname).sum(opinion_colname)
         keywords = dict(df_filtered[opinion_colname].apply(self._get_keywords, len=len))
         
@@ -58,7 +60,7 @@ class TextRank:
 if __name__ == "__main__":
     # --------------------------------------------------------------------------
     number_of_keywords = 100
-    number_of_opinions = 100
+    number_of_opinions = None
     polemo_category = "hotels_text"  # only opinions about hotels
     # available categories: 'all_text', 'all_sentence',
     # 'hotels_text', 'hotels_sentence', 'medicine_text', 'medicine_sentence',
@@ -74,5 +76,8 @@ if __name__ == "__main__":
         len=number_of_keywords,
         trainset_size=number_of_opinions
     )
+
+    remove_word_from_dicts(dicts, "hotel")
+    remove_shared_words(dicts)
 
     save_dicts_to_files(dicts, "textrank")
