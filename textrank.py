@@ -60,7 +60,9 @@ class TextRank:
 if __name__ == "__main__":
     # --------------------------------------------------------------------------
     number_of_keywords = 100
-    number_of_opinions = None
+    number_of_opinions = 100
+    textrank_type = "textrank"  #textrank, positionrank, topicrank, biasedtextrank
+
     polemo_category = "hotels_text"  # only opinions about hotels
     # available categories: 'all_text', 'all_sentence',
     # 'hotels_text', 'hotels_sentence', 'medicine_text', 'medicine_sentence',
@@ -70,7 +72,7 @@ if __name__ == "__main__":
     # df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category)
     df_polemo_official = load_preprocessed_data(polemo_category)
 
-    textRank = TextRank("pl_core_news_sm")
+    textRank = TextRank("pl_core_news_sm", textrank_type)
     dicts = textRank.create_dicts_for_all_classes(
         df_polemo_official,
         len=number_of_keywords,
@@ -80,4 +82,5 @@ if __name__ == "__main__":
     remove_word_from_dicts(dicts, "hotel")
     remove_shared_words(dicts)
 
-    save_dicts_to_files(dicts, "textrank")
+    save_dicts_to_files(dicts, textrank_type)
+
