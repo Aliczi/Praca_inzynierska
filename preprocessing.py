@@ -53,8 +53,14 @@ def preprocess(df: pd.DataFrame):
 
 
 if __name__=="__main__":
-    polemo_category = "hotels_text"
-    df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category)
-    
+    # available categories for polemo: 'all_text', 'all_sentence',
+    # 'hotels_text', 'hotels_sentence', 'medicine_text', 'medicine_sentence',
+    # 'products_text', 'products_sentence', 'reviews_text', 'reviews_sentence'
+    # --------------------------------------------------------------------------
+    polemo_category = "medicine_text"
+    train_or_test = "train"
+    df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category, train_or_test)
+
     oppinions = preprocess(df_polemo_official)
-    oppinions.to_csv("data/opinions_hotels_preprocessed.csv", sep=';', index=False)
+    oppinions.to_csv(f"data/{polemo_category}_{train_or_test}_preprocessed.csv", sep=';', index=False)
+
