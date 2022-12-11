@@ -8,7 +8,7 @@ class UnigramsSplitter(object):
     def __init__(self, input_file_path):
         self.input_file_path = input_file_path
         self.line_counter = 0
-        self.letters = 'abcdefghijklmnopqrstuvwxyz'
+        self.letters = 'aąbcćdeęfghijklłmnńoópqrsśtuvwxyzżź'
 
     def split_to_dir(self, output_dir):
         f = open(self.input_file_path, 'r')
@@ -47,5 +47,5 @@ class UnigramsSplitter(object):
 
 
 if __name__ == "__main__":
-    fixer = UnigramsSplitter('1grams_fixed')
-    fixer.split_to_dir('1grams_splitted')
+    fixer = UnigramsSplitter('../out/1grams_fixed')
+    fixer.split_to_dir('../out/1grams_splitted')

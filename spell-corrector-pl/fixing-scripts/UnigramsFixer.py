@@ -13,8 +13,12 @@ class UnigramsFixer(object):
         self.line_counter = 0
         removed = 0
 
+        # delete words consisting non-letter characters
         for line in input_file:
             self._print_line_number()
+            if self._quantity(line) < 3:
+                print(self._quantity(line))
+                break
             if self._all_chars_are_letters(self._word(line)):
                 output_file.write(line)
             else:
@@ -36,7 +40,11 @@ class UnigramsFixer(object):
     def _word(self, line):
         return " ".join(line.split()[1:])
 
+    def _quantity(self, line):
+        return int(line.split()[0])
+
+
 
 if __name__ == "__main__":
-    fixer = UnigramsFixer('1grams')
-    fixer.fix_and_save('1grams_fixed')
+    fixer = UnigramsFixer('../data/1grams')
+    fixer.fix_and_save('../out/1grams_fixed')

@@ -31,6 +31,8 @@ class BigramsSplitter(object):
         print("================== Split main file ==================")
         for line in f_in:
             self._print_line_number()
+            if self._number(line) < 3:
+                break
             word = self._word(line)
             filename_ending = get_filename_for_word(word)
             if len(filename_ending) == 2 or len(filename_ending) == 3:
@@ -66,9 +68,12 @@ class BigramsSplitter(object):
             print("Line: " + str(self.line_counter))
 
     def _word(self, line):
-        return unicode(line.split()[1], 'utf-8')
+        return str(line.split()[1])
+    
+    def _number(self, line):
+        return int(line.split()[0])
 
 
 if __name__ == "__main__":
-    fixer = BigramsSplitter('2grams')
-    fixer.split_to_dir('2grams_splitted')
+    fixer = BigramsSplitter('../../data/2grams')
+    fixer.split_to_dir('../out/2grams_splitted')

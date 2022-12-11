@@ -39,7 +39,7 @@ class SpellCorrector(object):
         #     word = unicode(word, 'utf-8')
         # if previous_word and not isinstance(previous_word, unicode):
         #     previous_word = unicode(previous_word, 'utf-8')
-        word =str(word)
+        word = str(word)
         previous_word = str(previous_word)
 
         candidates = self._candidates(word)

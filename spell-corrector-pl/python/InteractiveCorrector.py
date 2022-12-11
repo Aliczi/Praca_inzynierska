@@ -5,9 +5,9 @@ from BigramsProvider import BigramsProvider
 from SpellCorrector import SpellCorrector
 import argparse
 
-UNIGRAMS_FILEPATH =  '../fixing-scripts/1grams_fixed' #'../n-grams/1grams_fixed'
-UNIGRAMS_FILES_DIR = '../1grams_splitted/'
-BIGRAMS_FILEPATH = "../2grams_splitted"
+UNIGRAMS_FILEPATH = '..//out/1grams_fixed'
+UNIGRAMS_FILES_DIR = '../out/1grams_splitted/'
+BIGRAMS_FILEPATH = "../out/2grams_splitted"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -39,6 +39,6 @@ if __name__ == '__main__':
         exit(0)
 
     while True:
-        text_to_correct = raw_input("> ")
+        text_to_correct = input("> ")
         corrector.sentence_correction(text_to_correct)
         print("")
