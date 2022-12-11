@@ -2,7 +2,7 @@ import pandas as pd
 from noun_chunks_pl import noun_chunks_pl
 import spacy
 import pytextrank
-from tools import load_data, save_dicts_to_files
+from tools import load_raw_data, load_preprocessed_data, save_dicts_to_files
 
 # dependencies to_ install
 # !pip install pytextrank
@@ -23,17 +23,11 @@ class TextRank:
     def _get_chunks(self, doc):
         return noun_chunks_pl(doc)
 
-    def _lemmatize(self, text: str) -> str:
-        """Return lemmatized text"""
-        doc = self.nlp(text)
-        return " ".join([token.lemma_ for token in doc])
 
     def _get_keywords(
-        self, text: str, len=None, lemmatized=False
+        self, text: str, len=None
     ) -> list:
         """Get keywords from text"""
-        if lemmatized:
-            text = self._lemmatize(text)
 
         doc = self.nlp(text)
         keywords = [phrase.text for phrase in doc._.phrases]
@@ -71,7 +65,9 @@ if __name__ == "__main__":
     # 'products_text', 'products_sentence', 'reviews_text', 'reviews_sentence'
     # --------------------------------------------------------------------------
 
-    df_polemo_official = load_data("data/polemo2-official/", polemo_category)
+    # df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category)
+    df_polemo_official = load_preprocessed_data("data/opinions_hotels_preprocessed.csv")
+
     textRank = TextRank("pl_core_news_sm")
     dicts = textRank.create_dicts_for_all_classes(
         df_polemo_official,
