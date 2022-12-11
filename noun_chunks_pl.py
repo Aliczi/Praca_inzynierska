@@ -44,7 +44,7 @@ def noun_chunks_pl(doclike):
             end = start + 1
             while start >= prev_end and doc[start-1].head in [doc[start], word] and doc[start-1].dep in mod_deps:
                 start -= 1
-            while doc[end].head in [doc[end-1], word] and doc[end].dep in mod_deps:
+            while doc[end-1].head in [doc[end-1], word] and doc[end].dep in mod_deps:
                 end += 1
             prev_end = end
             yield start, end, np_label
