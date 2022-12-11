@@ -40,10 +40,10 @@ class TextRank:
         target_colname: str = "target",
         opinion_colname: str = "text",
         len: int = 25,
-        trainset_size: int = None, # use only for development purposes – shorters computation
+        trainset_size: int = None, # use only for development purposes – shortens computation
     ) -> dict:
-        """Create dictionaries with keywords for every oppinion class in df.
-        Returns a dictionary in form {class0: [keyword0, keyword1, ...], ...}"""
+        """ Create dictionaries with keywords for every oppinion class in df.
+        Returns a dictionary in form {class0: [keyword0, keyword1, ...], ...} """
         keywords = dict()
 
         if trainset_size:
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     # --------------------------------------------------------------------------
 
     # df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category)
-    df_polemo_official = load_preprocessed_data("data/opinions_hotels_preprocessed.csv")
+    df_polemo_official = load_preprocessed_data(polemo_category)
 
     textRank = TextRank("pl_core_news_sm")
     dicts = textRank.create_dicts_for_all_classes(

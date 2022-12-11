@@ -11,14 +11,14 @@ def save_dicts_to_files(dicts: dict, prefix: str):
         print(f"Keywords for sentiment {sentiment} written to file {filename}")
 
 
-def load_raw_data(data_path: str, data_category: str):
+def load_raw_data(data_path: str, data_category: str, traintest: str = "train"):
     polemo_official = load_dataset(data_path, data_category)
-    df_polemo_official = pd.DataFrame(polemo_official["train"])
+    df_polemo_official = pd.DataFrame(polemo_official[traintest])
 
     return df_polemo_official
 
-def load_preprocessed_data(data_path: str):
-    return pd.read_csv(data_path, sep=";", header=0)
+def load_preprocessed_data(polemo_category: str):
+    return pd.read_csv(f"data/{polemo_category}_train_preprocessed.csv", sep=";", header=0)
 
 def remove_word_from_dicts(dicts: dict, word: str):
     """ Remove obvious words from dicts (e.g. "hotel" from opinions about hotels) """
@@ -31,7 +31,7 @@ def remove_word_from_dicts(dicts: dict, word: str):
                 pass
 
 def remove_shared_words(dicts: dict):
-    """If the word is shared among two or more dictionaries, remove it"""
+    """ If the word is shared among two or more dictionaries, remove it """
     sentiment = list(dicts.keys())
 
     for i in range(len(dicts)):
