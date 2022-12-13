@@ -1,5 +1,6 @@
+import sys
 import pandas as pd
-from noun_chunks_pl import noun_chunks_pl
+from textrank.noun_chunks_pl import noun_chunks_pl
 import spacy
 import pytextrank
 from tools import *
@@ -27,7 +28,7 @@ class TextRank:
         self, text: str, len=None
     ) -> list:
         """Get keywords from text"""
-
+        print(text)
         doc = self.nlp(text)
         keywords = [phrase.text for phrase in doc._.phrases]
         if len is not None:
@@ -40,14 +41,14 @@ class TextRank:
         target_colname: str = "target",
         opinion_colname: str = "text",
         len: int = 25,
-        trainset_size: int = None, # use only for development purposes – shortens computation
+        trainset_size: int = None # use only for development purposes – shortens computation
     ) -> dict:
         """ Create dictionaries with keywords for every oppinion class in df.
         Returns a dictionary in form {class0: [keyword0, keyword1, ...], ...} """
         keywords = dict()
 
         if trainset_size:
-            df_filtered = df[:trainset_size]
+            df_filtered = df[1:trainset_size]
         else:
             df_filtered = df
         df_filtered = df_filtered.groupby(target_colname).sum(opinion_colname)
@@ -60,8 +61,8 @@ class TextRank:
 if __name__ == "__main__":
     # --------------------------------------------------------------------------
     number_of_keywords = 100
-    number_of_opinions = 100
-    textrank_type = "textrank"  #textrank, positionrank, topicrank, biasedtextrank
+    number_of_opinions = 2
+    textrank_type = "textrank"  # textrank, positionrank, topicrank, biasedtextrank
 
     polemo_category = "hotels_text"  # only opinions about hotels
     # available categories: 'all_text', 'all_sentence',
