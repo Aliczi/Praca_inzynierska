@@ -11,7 +11,8 @@ from tools import *
 
 
 class TextRank:
-    def __init__(self, language_model: str, textrank_type: str = "textrank"):
+    def __init__(self, language_model: str, textrank_type: str = "textrank", bias_words: str = None):
+        self.bias_words = bias_words
         self.nlp = spacy.load(language_model)
         spacy.lang.pl.PolishDefaults.syntax_iterators = {
             "noun_chunks": self._get_chunks
@@ -30,6 +31,8 @@ class TextRank:
         """Get keywords from text"""
         print(text)
         doc = self.nlp(text)
+        if bias_words != None:
+            doc._.textrank.change_focus(focus=self.bias_words, bias=1.0, default_bias=0)
         keywords = [phrase.text for phrase in doc._.phrases]
         if len is not None:
             keywords = keywords[:len]
@@ -61,19 +64,21 @@ class TextRank:
 if __name__ == "__main__":
     # --------------------------------------------------------------------------
     number_of_keywords = 100
-    number_of_opinions = 2
+    number_of_opinions = None
     textrank_type = "textrank"  # textrank, positionrank, topicrank, biasedtextrank
-
+    words_for_bias = ["hotel", "pokój", "łazienka", "polecenie", "dobry", "straszny", "zły", "ładny"]
     polemo_category = "hotels_text"  # only opinions about hotels
     # available categories: 'all_text', 'all_sentence',
     # 'hotels_text', 'hotels_sentence', 'medicine_text', 'medicine_sentence',
     # 'products_text', 'products_sentence', 'reviews_text', 'reviews_sentence'
     # --------------------------------------------------------------------------
-
+   
+    bias_words = None if textrank_type != "biasedtextrank" else " ".join(words_for_bias)
+   
     # df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category)
     df_polemo_official = load_preprocessed_data(polemo_category)
 
-    textRank = TextRank("pl_core_news_sm", textrank_type)
+    textRank = TextRank("pl_core_news_sm", textrank_type, bias_words)
     dicts = textRank.create_dicts_for_all_classes(
         df_polemo_official,
         len=number_of_keywords,
