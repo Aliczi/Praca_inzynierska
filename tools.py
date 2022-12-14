@@ -9,7 +9,7 @@ def save_dicts_to_files(dicts: dict, prefix: str):
     for sentiment in dicts:
         filename = f"{directory}/{prefix}_{sentiment}.txt"
         os.makedirs(directory, exist_ok=True)
-        with open(filename, "w") as file:
+         with open(filename, "w", encoding="utf-8") as file:
             file.write("\n".join(dicts[sentiment]))
         print(f"Keywords for sentiment {sentiment} written to file {filename}")
 
