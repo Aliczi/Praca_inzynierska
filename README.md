@@ -20,3 +20,7 @@ For help run:
 ```sh
 python3 sbert.py -h
 ```
+
+
+### Installation
+To install Sentence-Transformer please these notes https://www.sbert.net/docs/installation.html
