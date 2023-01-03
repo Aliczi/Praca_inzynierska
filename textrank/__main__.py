@@ -45,7 +45,7 @@ class TextRank:
         opinion_colname: str = "text",
         len: int = 25,  # maximum length of the keywords list
         trainset_size: int = None,  # use only for development purposes – shortens computation
-        join_oppinions = True  # create a long text from all oppinions with the same sentiment
+        join_oppinions=True  # create a long text from all oppinions with the same sentiment
     ) -> dict:
         """ Create dictionaries with keywords for every oppinion class in df.
         Returns a dictionary in form {class0: [keyword0, keyword1, ...], ...} """
@@ -105,4 +105,3 @@ if __name__ == "__main__":
     remove_shared_words(dicts)
 
     save_dicts_to_files(dicts, textrank_type + ("_joined" if join_oppinions else "_sep"))
-
