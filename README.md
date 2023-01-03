@@ -23,4 +23,4 @@ python3 sbert.py -h
 
 
 ### Installation
-To install Sentence-Transformer please these notes https://www.sbert.net/docs/installation.html
+To install Sentence-Transformer please follow these notes https://www.sbert.net/docs/installation.html
