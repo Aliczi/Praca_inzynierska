@@ -1,9 +1,11 @@
+
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import os, sys
+
 sys.path.insert(0, os.path.abspath(".."))
-from python.NGramsUtils import get_filename_for_word
+from NGramsUtils import get_filename_for_word
 
 class BigramsSplitter(object):
     def __init__(self, input_file_path):
@@ -22,17 +24,15 @@ class BigramsSplitter(object):
     def _split_to_one_letter_files(self, output_dir):
         fds = dict()
         for letter in self.letters:
-            fds[letter] = open(os.path.join(output_dir, "2grams_" + letter + "_temp"), 'w')
-        fds['other'] = open(os.path.join(output_dir, '2grams_other'), 'w')
+            fds[letter] = open(os.path.join(output_dir, "2grams_" + letter + "_temp"), 'w', encoding="utf8")
+        fds['other'] = open(os.path.join(output_dir, '2grams_other'), 'w', encoding="utf8")
 
         self.line_counter = 0
-        f_in = open(self.input_file_path, 'r')
+        f_in = open(self.input_file_path, 'r', encoding="utf8")
         self.line_counter = 0
         print("================== Split main file ==================")
         for line in f_in:
             self._print_line_number()
-            if self._number(line) < 3:
-                break
             word = self._word(line)
             filename_ending = get_filename_for_word(word)
             if len(filename_ending) == 2 or len(filename_ending) == 3:
@@ -46,11 +46,11 @@ class BigramsSplitter(object):
     def _split_to_two_letters_files(self, output_dir):
         for letter in self.letters:
             print("================== Split 2grams_" + letter + "_temp ==================")
-            f_in = open(os.path.join(output_dir, "2grams_" + letter + "_temp"), 'r')
+            f_in = open(os.path.join(output_dir, "2grams_" + letter + "_temp"), 'r', encoding="utf8")
             fds = dict()
-            fds[letter] = open(os.path.join(output_dir, "2grams_" + letter), 'w')
+            fds[letter] = open(os.path.join(output_dir, "2grams_" + letter), 'w', encoding="utf8")
             for second_letter in self.letters:
-                fds[letter + second_letter] = open(os.path.join(output_dir, "2grams_" + letter + second_letter), 'w')
+                fds[letter + second_letter] = open(os.path.join(output_dir, "2grams_" + letter + second_letter), 'w', encoding="utf8")
 
             self.line_counter = 0
             for line in f_in:
@@ -68,12 +68,9 @@ class BigramsSplitter(object):
             print("Line: " + str(self.line_counter))
 
     def _word(self, line):
-        return str(line.split()[1])
-    
-    def _number(self, line):
-        return int(line.split()[0])
+        return bytes(line.split()[1], encoding='utf-8')
 
 
 if __name__ == "__main__":
-    fixer = BigramsSplitter('../../data/2grams')
-    fixer.split_to_dir('../out/2grams_splitted')
+    fixer = BigramsSplitter('2grams')
+    fixer.split_to_dir('2grams_splitted')

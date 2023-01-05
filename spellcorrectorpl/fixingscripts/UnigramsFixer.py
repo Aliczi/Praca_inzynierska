@@ -8,8 +8,8 @@ class UnigramsFixer(object):
         self.line_counter = 0
 
     def fix_and_save(self, output_file_path):
-        input_file = open(self.input_file_path, 'r')
-        output_file = open(output_file_path, 'w')
+        input_file = open(self.input_file_path, 'r', encoding='utf-8')
+        output_file = open(output_file_path, 'w', encoding='utf-8')
         self.line_counter = 0
         removed = 0
 
@@ -46,5 +46,5 @@ class UnigramsFixer(object):
 
 
 if __name__ == "__main__":
-    fixer = UnigramsFixer('../data/1grams')
-    fixer.fix_and_save('../out/1grams_fixed')
+    fixer = UnigramsFixer('1grams')
+    fixer.fix_and_save('1grams_fixed')

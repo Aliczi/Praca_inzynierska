@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from NGramsUtils import *
 import os
 
@@ -10,14 +12,16 @@ class BigramsProvider(object):
     def initialize(self, bigrams_directory):
         self.bigrams_dir = bigrams_directory
 
+
     def known(self, words, previous_word):
         known_words = list()
         filename_ending = get_filename_for_word(previous_word)
         if len(filename_ending) == 3:
             filename_ending = filename_ending[:2]
-        file_name = os.path.join(self.bigrams_dir, "2grams_" + filename_ending)
 
-        f = open(file_name, 'r')
+
+        file_name = os.path.join(self.bigrams_dir, "2grams_" + filename_ending)
+        f = open(file_name, 'r', encoding="utf-8")
         for line in f:
             freq, bigram = line_to_bigram_pair(line)
             for w in words:

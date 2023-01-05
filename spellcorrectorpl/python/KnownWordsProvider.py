@@ -9,7 +9,7 @@ class KnownWordsProviderUsingRAM(object):
     def initialize(self, unigrams_file_path):
         self.words = dict()
         self.N = 0.0
-        f = open(unigrams_file_path, 'r')
+        f = open(unigrams_file_path, 'r', encoding="utf8")
         for line in f:
             freq, word = line_to_pair(line)
             self.words[word] = freq
@@ -37,7 +37,7 @@ class KnownWordsProviderUsingBigFile(object):
         self.unigrams_file_path = unigrams_file_path
         self.words = dict()
         self.N = 0.0
-        f = open(unigrams_file_path, 'r')
+        f = open(unigrams_file_path, 'r', encoding="utf8")
         line_count = 0
         for line in f:
             line_count += 1
@@ -50,7 +50,7 @@ class KnownWordsProviderUsingBigFile(object):
         words_to_check = set(words)
         if not self.unigrams_file_path:
             return False
-        f = open(self.unigrams_file_path, 'r')
+        f = open(self.unigrams_file_path, 'r', encoding="utf8")
         for line in f:
             freq, word = line_to_pair(line)
             if word in words_to_check:
@@ -88,6 +88,7 @@ class KnownWordsProviderUsingMultipleFiles(object):
 
     def known_with_ram(self, words):
         known_words = list()
+
         words_groups = split_words_by_first_letter(words)
         for group in words_groups:
             known_words_letter = dict()
@@ -97,7 +98,7 @@ class KnownWordsProviderUsingMultipleFiles(object):
             else:
                 file_name = self.unigrams_dir + "/1grams_other"
 
-            f = open(file_name, 'r')
+            f = open(file_name, 'r', encoding="utf8")
             for line in f:
                 freq, known_word = line_to_pair(line)
                 known_words_letter[known_word] = freq
@@ -121,7 +122,7 @@ class KnownWordsProviderUsingMultipleFiles(object):
             else:
                 file_name = self.unigrams_dir + "/1grams_other"
 
-            f = open(file_name, 'r')
+            f = open(file_name, 'r', encoding="utf8")
             for line in f:
                 freq, known_word = line_to_pair(line)
                 if known_word in group:

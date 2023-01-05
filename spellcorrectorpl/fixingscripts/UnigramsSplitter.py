@@ -11,14 +11,14 @@ class UnigramsSplitter(object):
         self.letters = 'aąbcćdeęfghijklłmnńoópqrsśtuvwxyzżź'
 
     def split_to_dir(self, output_dir):
-        f = open(self.input_file_path, 'r')
+        f = open(self.input_file_path, 'r', encoding='utf-8')
         if not os.path.exists(os.path.dirname(output_dir)):
             os.makedirs(output_dir)
 
         fds = dict()
         for letter in self.letters:
-            fds[letter] = open(output_dir + os.sep + '1grams_' + letter, 'w')
-        fds['other'] = open(output_dir + os.sep + '1grams_other', 'w')
+            fds[letter] = open(output_dir + os.sep + '1grams_' + letter, 'w', encoding='utf-8')
+        fds['other'] = open(output_dir + os.sep + '1grams_other', 'w', encoding='utf-8')
 
         self.line_counter = 0
         for line in f:
@@ -47,5 +47,5 @@ class UnigramsSplitter(object):
 
 
 if __name__ == "__main__":
-    fixer = UnigramsSplitter('../out/1grams_fixed')
-    fixer.split_to_dir('../out/1grams_splitted')
+    fixer = UnigramsSplitter('1grams_fixed')
+    fixer.split_to_dir('1grams_splitted')
