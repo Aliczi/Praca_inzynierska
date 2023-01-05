@@ -1,3 +1,4 @@
+from collections import Counter
 import sys
 import pandas as pd
 from textrank.noun_chunks_pl import noun_chunks_pl
@@ -29,9 +30,8 @@ class TextRank:
         self, text: str, len=None
     ) -> list:
         """Get keywords from text"""
-        print(text)
         doc = self.nlp(text)
-        if bias_words != None:
+        if bias_words is not None:
             doc._.textrank.change_focus(focus=self.bias_words, bias=1.0, default_bias=0)
         keywords = [phrase.text for phrase in doc._.phrases]
         if len is not None:
@@ -43,28 +43,43 @@ class TextRank:
         df: pd.DataFrame,
         target_colname: str = "target",
         opinion_colname: str = "text",
-        len: int = 25,
-        trainset_size: int = None # use only for development purposes – shortens computation
+        len: int = 25,  # maximum length of the keywords list
+        trainset_size: int = None,  # use only for development purposes – shortens computation
+        join_oppinions=True  # create a long text from all oppinions with the same sentiment
     ) -> dict:
         """ Create dictionaries with keywords for every oppinion class in df.
         Returns a dictionary in form {class0: [keyword0, keyword1, ...], ...} """
-        keywords = dict()
 
         if trainset_size:
             df_filtered = df[1:trainset_size]
         else:
             df_filtered = df
-        df_filtered = df_filtered.groupby(target_colname).sum(opinion_colname)
-        keywords = dict(df_filtered[opinion_colname].apply(self._get_keywords, len=len))
-        
+        if join_oppinions:
+            # join all oppinions in one text 
+            df_filtered = df_filtered.groupby(target_colname).sum(opinion_colname)
+            keywords = dict(df_filtered[opinion_colname].apply(self._get_keywords, len=len))
+        else:
+            # create a dict for each oppinion and join them
+            keywords = dict()
+            for sentiment in df[target_colname].unique():
+                df_filtered = df[df[target_colname] == sentiment]
+                this_sentiment_keywords = []
+                
+                for opinion in df_filtered[opinion_colname]:
+                    opinion_keywords = self._get_keywords(opinion, len=len)
+                    this_sentiment_keywords += opinion_keywords
+                # get keywords which appear in the most oppinions
+                ct = Counter(this_sentiment_keywords)
+                keywords[sentiment] = list(dict(sorted(dict(ct).items(), key=lambda item: item[1], reverse=True)).keys())[:len]
+            
         return keywords
-
 
 
 if __name__ == "__main__":
     # --------------------------------------------------------------------------
     number_of_keywords = 100
     number_of_opinions = None
+    join_oppinions = False
     textrank_type = "textrank"  # textrank, positionrank, topicrank, biasedtextrank
     words_for_bias = ["hotel", "pokój", "łazienka", "polecenie", "dobry", "straszny", "zły", "ładny"]
     polemo_category = "hotels_text"  # only opinions about hotels
@@ -82,11 +97,11 @@ if __name__ == "__main__":
     dicts = textRank.create_dicts_for_all_classes(
         df_polemo_official,
         len=number_of_keywords,
-        trainset_size=number_of_opinions
+        trainset_size=number_of_opinions,
+        join_oppinions=join_oppinions
     )
 
     remove_word_from_dicts(dicts, "hotel")
     remove_shared_words(dicts)
 
-    save_dicts_to_files(dicts, textrank_type)
-
+    save_dicts_to_files(dicts, textrank_type + ("_joined" if join_oppinions else "_sep"))
