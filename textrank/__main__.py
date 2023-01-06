@@ -77,7 +77,7 @@ class TextRank:
 
 if __name__ == "__main__":
     # --------------------------------------------------------------------------
-    number_of_keywords = 100
+    max_number_of_keywords = 100
     number_of_opinions = None
     join_oppinions = False
     textrank_type = "textrank"  # textrank, positionrank, topicrank, biasedtextrank
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     textRank = TextRank("pl_core_news_sm", textrank_type, bias_words)
     dicts = textRank.create_dicts_for_all_classes(
         df_polemo_official,
-        len=number_of_keywords,
+        len=max_number_of_keywords,
         trainset_size=number_of_opinions,
         join_oppinions=join_oppinions
     )
