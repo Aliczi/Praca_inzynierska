@@ -2,6 +2,16 @@
 
 ## usage
 
+### preprocessing 
+- Download unigrams and bigrams from the balanced subcorpus of National Corpus of Polish [Link](http://zil.ipipan.waw.pl/NKJPNGrams).
+- Extracted files 1grams and 2grams place in the folder spellcorrectorpl. Remove extra folders if necessary.
+- Run scripts UnigramsFixer.py, UnigramsSplitter.py and BigramsSplitter.py from the subfolder fixingscripts.
+- Finally run:
+
+```sh
+python preprocessing.py
+```
+
 ### textrank
 `textrank` -- provide the parameters in the code, from the main dir run:
 ```sh
@@ -89,3 +99,8 @@ where:
 
 ## Installation
 To install Sentence-Transformer please follow these notes https://www.sbert.net/docs/installation.html
+
+
+## Requirements
+- unidecode
+
