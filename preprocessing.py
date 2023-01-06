@@ -18,8 +18,8 @@ from spellcorrectorpl.python.SpellCorrector import SpellCorrector
 import re
 
 UNIGRAMS_FILEPATH = '1grams_fixed'
-UNIGRAMS_FILES_DIR = '1grams_splitted'
-BIGRAMS_FILEPATH = "2grams_splitted"
+UNIGRAMS_FILES_DIR = 'spellcorrectorpl/fixingscripts/1grams_splitted'
+BIGRAMS_FILEPATH = "spellcorrectorpl/fixingscripts/2grams_splitted"
 
 words_provider = KnownWordsProviderUsingMultipleFiles()
 bigrams_provider = BigramsProvider()
@@ -42,6 +42,7 @@ import re
 def preprocess(df: pd.DataFrame, path):
     translate_table = dict((ord(char), None) for char in punctuation)
     oppinions = df.copy()
+    remove_non_english = lambda s: re.sub(r'[^łśćżźąęńóa-zA-Z\n\.]', ' ', s)
     with open(path, 'a', encoding='UTF8', newline='') as f:
         
         oppinions["text"] = oppinions["text"].str.replace('"',"") # remove quotation
@@ -49,18 +50,18 @@ def preprocess(df: pd.DataFrame, path):
         oppinions["text"] = oppinions["text"].str.casefold() # to lower
         oppinions["text"] = oppinions["text"].str.replace('[^łśćżźąęńóa-zA-Z\s\n\.]', '', regex=True)
         oppinions["text"] = oppinions["text"].str.replace(r'\s+', ' ', regex=True) # remove quotation
-        for i in range(933, len(oppinions["text"])):
+        for i in range(len(oppinions["text"])):
 
             oppinions.at[i,"text"] = correct_opinion(oppinions.at[i,"text"], corrector=corrector)
             oppinions.at[i,"text"] = unidecode.unidecode(oppinions.at[i,"text"]) # remove polish characters
             
             if(i==0):
-                print(oppinions.loc[[i]])
-                #oppinions.loc[[i]].to_csv(path, sep=';')
+                #print(oppinions.loc[[i]])
+                oppinions.loc[[i]].to_csv(path, sep=';')
                 #oppinions.loc[[i]].to_csv(path, sep=';', header=False,mode='a')
             else:
-                print(oppinions.loc[[i]])
-                #oppinions.loc[[i]].to_csv(path, sep=';', header=False,mode='a')
+                #print(oppinions.loc[[i]])
+                oppinions.loc[[i]].to_csv(path, sep=';', header=False,mode='a')
     return oppinions
 
 print(df_polemo_official)

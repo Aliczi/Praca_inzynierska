@@ -164,3 +164,5 @@ cython_debug/
 
 # other files
 *.txt
+spellcorrectorpl/fixingscripts/1grams_splitted/
+spellcorrectorpl/fixingscripts/2grams_splitted/
