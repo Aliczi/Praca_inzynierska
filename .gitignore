@@ -161,3 +161,6 @@ cython_debug/
 
 # for data directory
 *.lock
+
+# other files
+*.txt
