@@ -1,66 +1,75 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+import pandas as pd
+from datasets import load_dataset
+
+
+polemo_category = "hotels_text"
+polemo_official = load_dataset("data/polemo2-official/", polemo_category) # only oppinions about hotels
+df_polemo_official = pd.DataFrame(polemo_official["train"])
+print(df_polemo_official.head)
+
 import sys
 sys.path.insert(0, './spellcorrectorpl/python')
-# from KnownWordsProvider import KnownWordsProviderUsingRAM, KnownWordsProviderUsingBigFile, KnownWordsProviderUsingMultipleFiles
-from BigramsProvider import BigramsProvider
-from SpellCorrector import SpellCorrector
-
-from tools import load_raw_data
-
-from string import punctuation
-import pandas as pd
+from spellcorrectorpl.python.KnownWordsProvider import KnownWordsProviderUsingRAM, KnownWordsProviderUsingBigFile, KnownWordsProviderUsingMultipleFiles
+from spellcorrectorpl.python.BigramsProvider import BigramsProvider
+from spellcorrectorpl.python.SpellCorrector import SpellCorrector
 import re
-import unidecode
-import spacy
 
-UNIGRAMS_FILEPATH = 'spellcorrectorpl/out/1grams_fixed'
-UNIGRAMS_FILES_DIR = 'spellcorrectorpl/out/1grams_splitted/'
-BIGRAMS_FILEPATH = "spellcorrectorpl/out/2grams_splitted"
+UNIGRAMS_FILEPATH = '1grams_fixed'
+UNIGRAMS_FILES_DIR = '1grams_splitted'
+BIGRAMS_FILEPATH = "2grams_splitted"
 
+words_provider = KnownWordsProviderUsingMultipleFiles()
+bigrams_provider = BigramsProvider()
+words_provider.initialize(UNIGRAMS_FILES_DIR)
+bigrams_provider.initialize(BIGRAMS_FILEPATH)
 
-def create_corrector():
-    words_provider = KnownWordsProviderUsingMultipleFiles()
-    bigrams_provider = BigramsProvider()
-    words_provider.initialize(UNIGRAMS_FILES_DIR)
-    bigrams_provider.initialize(BIGRAMS_FILEPATH)
-
-    return SpellCorrector(words_provider, bigrams_provider)
+corrector = SpellCorrector(words_provider, bigrams_provider)
 
 def correct_opinion(opinion: str, corrector: SpellCorrector):        
-    opinion = re.sub(r'\d', "<liczba>", opinion)  #change numbers to <liczba>
+    opinion = re.sub(r'\d', "<liczba>", opinion) #change numbers to #L
     opinion = corrector.sentence_correction(opinion, print_words=False)
     return opinion
 
-def lemmatize(opinion: str, nlp) -> str:
-    opinion = re.sub(' +', ' ', opinion) # remove multiple spaces
-    doc = nlp(opinion)
-    return " ".join([token.lemma_ for token in doc])
+from string import punctuation
+import unidecode
+import csv
+import re
 
-def preprocess(df: pd.DataFrame):
-    nlp = spacy.load("pl_core_news_sm")
+
+def preprocess(df: pd.DataFrame, path):
     translate_table = dict((ord(char), None) for char in punctuation)
     oppinions = df.copy()
-    oppinions["text"] = oppinions["text"].str.translate(translate_table)  # remove punctuation
-    # TODO: usuwać słowa w cudzysłowie?
+    with open(path, 'a', encoding='UTF8', newline='') as f:
+        
+        oppinions["text"] = oppinions["text"].str.replace('"',"") # remove quotation
+        oppinions["text"] = oppinions["text"].str.translate(translate_table) # remove punctuation
+        oppinions["text"] = oppinions["text"].str.casefold() # to lower
+        oppinions["text"] = oppinions["text"].str.replace('[^łśćżźąęńóa-zA-Z\s\n\.]', '', regex=True)
+        oppinions["text"] = oppinions["text"].str.replace(r'\s+', ' ', regex=True) # remove quotation
+        for i in range(933, len(oppinions["text"])):
 
-    # corrector = create_corrector()  
-    # oppinions["text"] = oppinions["text"].apply(correct_opinion, corrector=corrector)
-
-    oppinions["text"] = oppinions["text"].str.lower()  # to lower
-    oppinions["text"] = oppinions["text"].apply(lemmatize, nlp=nlp)
-    # oppinions["text"] = oppinions["text"].apply(unidecode.unidecode)  # remove polish characters
-  
+            oppinions.at[i,"text"] = correct_opinion(oppinions.at[i,"text"], corrector=corrector)
+            oppinions.at[i,"text"] = unidecode.unidecode(oppinions.at[i,"text"]) # remove polish characters
+            
+            if(i==0):
+                print(oppinions.loc[[i]])
+                #oppinions.loc[[i]].to_csv(path, sep=';')
+                #oppinions.loc[[i]].to_csv(path, sep=';', header=False,mode='a')
+            else:
+                print(oppinions.loc[[i]])
+                #oppinions.loc[[i]].to_csv(path, sep=';', header=False,mode='a')
     return oppinions
 
+print(df_polemo_official)
+#test_df = pd.DataFrame([["jesli wybierasz sie na zamek z dziecmi  co wiecej oczy trzeba miec doslownie z kazdej strony", 3]], columns=["text", "target"])
+#oppinions = preprocess(test_df,"data/opinions_hotels_preprocessed.csv")
+oppinions = preprocess(df_polemo_official,"data/opinions_hotels_preprocessed.csv")
+#oppinions = preprocess(df_polemo_official,"data/hotels_text_train_simple_preprocessed.csv")
 
-if __name__=="__main__":
-    # available categories for polemo: 'all_text', 'all_sentence',
-    # 'hotels_text', 'hotels_sentence', 'medicine_text', 'medicine_sentence',
-    # 'products_text', 'products_sentence', 'reviews_text', 'reviews_sentence'
-    # --------------------------------------------------------------------------
-    polemo_category = "medicine_text"
-    train_or_test = "train"
-    df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category, train_or_test)
 
-    oppinions = preprocess(df_polemo_official)
-    oppinions.to_csv(f"data/{polemo_category}_{train_or_test}_preprocessed.csv", sep=';', index=False)
+
+
 
