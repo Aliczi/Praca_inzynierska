@@ -8,7 +8,7 @@ from tools import *
 
 # dependencies to_ install
 # !pip install pytextrank
-# !python -m spacy download pl_corenews_sm
+# !python -m spacy download pl_core_news_sm
 
 
 class TextRank:
@@ -21,6 +21,7 @@ class TextRank:
         self.nlp = spacy.load(language_model)
 
         self.nlp.add_pipe(textrank_type)
+        self.nlp.max_length = 1100000
 
     def _get_chunks(self, doc):
         return noun_chunks_pl(doc)
@@ -53,10 +54,11 @@ class TextRank:
         if trainset_size:
             df_filtered = df[1:trainset_size]
         else:
-            df_filtered = df
+            df_filtered = df.copy()
         if join_oppinions:
             # join all oppinions in one text 
-            df_filtered = df_filtered.groupby(target_colname).sum(opinion_colname)
+            df_filtered = df_filtered.groupby(target_colname).sum(numeric_only=False)
+            print(df_filtered.head())
             keywords = dict(df_filtered[opinion_colname].apply(self._get_keywords, len=len))
         else:
             # create a dict for each oppinion and join them
@@ -79,7 +81,7 @@ if __name__ == "__main__":
     # --------------------------------------------------------------------------
     max_number_of_keywords = 100
     number_of_opinions = None
-    join_oppinions = False
+    join_oppinions = True
     textrank_type = "textrank"  # textrank, positionrank, topicrank, biasedtextrank
     words_for_bias = ["hotel", "pokój", "łazienka", "polecenie", "dobry", "straszny", "zły", "ładny"]
     polemo_category = "hotels_text"  # only opinions about hotels
@@ -90,8 +92,9 @@ if __name__ == "__main__":
    
     bias_words = None if textrank_type != "biasedtextrank" else " ".join(words_for_bias)
    
-    # df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category)
-    df_polemo_official = load_preprocessed_data(polemo_category)
+    df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category)
+    print(df_polemo_official.head())
+    # df_polemo_official = load_preprocessed_data(polemo_category)
 
     textRank = TextRank("pl_core_news_sm", textrank_type, bias_words)
     dicts = textRank.create_dicts_for_all_classes(
