@@ -161,3 +161,8 @@ cython_debug/
 
 # for data directory
 *.lock
+
+# other files
+*.txt
+spellcorrectorpl/fixingscripts/1grams_splitted/
+spellcorrectorpl/fixingscripts/2grams_splitted/
