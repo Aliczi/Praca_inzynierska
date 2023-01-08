@@ -31,6 +31,8 @@ def line_to_bigram_pair(line):
 def split_words_by_first_letter(words):
     splitted_words = dict()
     for word in words:
+        if len(word)==0:
+            continue
         first_letter = word[0]
         if first_letter in splitted_words:
             splitted_words[first_letter].append(word)
