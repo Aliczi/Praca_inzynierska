@@ -1,0 +1,17 @@
+neutralne: 11
+dobre: 2
+zle: 35
+19 / 48
+39.58333333333333 % poprawnie przypisanych 
+1 / 11
+9.090909090909092, % poprawnie przypisanych neutralnych 
+0 / 2
+0.0, % poprawnie przypisanych dobrych 
+18 / 35
+51.42857142857142, % poprawnie przypisanych zlych 
+ 
+oryginalne\przypisane      Neutalne    Dobre    Zle
+-----------------------  ----------  -------  -----
+Neutralne                         1        2      8
+Dobre                             0        0      2
+Zle                               2       15     18

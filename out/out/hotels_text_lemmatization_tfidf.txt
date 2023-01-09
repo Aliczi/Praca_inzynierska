@@ -1,0 +1,17 @@
+neutralne: 128
+dobre: 100
+zle: 167
+176 / 395
+44.55696202531645 % poprawnie przypisanych 
+21 / 128
+16.40625, % poprawnie przypisanych neutralnych 
+48 / 100
+48.0, % poprawnie przypisanych dobrych 
+107 / 167
+64.07185628742515, % poprawnie przypisanych zlych 
+ 
+oryginalne\przypisane      Neutalne    Dobre    Zle
+-----------------------  ----------  -------  -----
+Neutralne                        21       43     64
+Dobre                            17       48     35
+Zle                              32       28    107
