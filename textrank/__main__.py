@@ -8,7 +8,7 @@ from tools import *
 
 # dependencies to_ install
 # !pip install pytextrank
-# !python -m spacy download pl_core_news_sm
+# !python -m spacy download pl_core_news_sm TODO zmienić w readme na python -m textrank, bo inaczej nie dziala
 
 
 class TextRank:
@@ -114,7 +114,7 @@ if __name__ == "__main__":
                     trainset_size=number_of_opinions,
                     join_oppinions=join_oppinions
                 )
-                save_dicts_to_files(dicts, f"{category}_{preprocessing_category}_textrank", "out/_textrank")
+                save_dicts_to_files(dicts, f"{category}_{preprocessing_category}_textrank", "out/textrank")
                 print(f"{category}_{preprocessing_category}_textrank done!")
     else:
         df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category)

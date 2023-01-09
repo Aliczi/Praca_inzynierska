@@ -19,7 +19,7 @@ slownik = []
 
 polemo_category = "all_text"
 preprocessed = "all"
-function = "all"
+function = "textrank"
 
 if (polemo_category == "all_text"):
     polemo_categories = ["hotels_text", "medicine_text", "products_text", "reviews_text"]
@@ -27,7 +27,7 @@ else:
     polemo_categories = [polemo_category]
 
 if (function == "all"):
-    functions = ["sbert", "tfidf"] #TODO add 'textrank' when done
+    functions = ["sbert", "tfidf", "textrank"]
 else:
     functions = [function]
 
