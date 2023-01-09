@@ -84,27 +84,52 @@ if __name__ == "__main__":
     join_oppinions = True
     textrank_type = "textrank"  # textrank, positionrank, topicrank, biasedtextrank
     words_for_bias = ["hotel", "pokój", "łazienka", "polecenie", "dobry", "straszny", "zły", "ładny"]
-    polemo_category = "hotels_text"  # only opinions about hotels
+    preprocessed = "all"
+    polemo_category = "all_text"  # only opinions about hotels
     # available categories: 'all_text', 'all_sentence',
     # 'hotels_text', 'hotels_sentence', 'medicine_text', 'medicine_sentence',
     # 'products_text', 'products_sentence', 'reviews_text', 'reviews_sentence'
     # --------------------------------------------------------------------------
    
     bias_words = None if textrank_type != "biasedtextrank" else " ".join(words_for_bias)
-   
-    df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category)
-    print(df_polemo_official.head())
-    # df_polemo_official = load_preprocessed_data(polemo_category)
 
-    textRank = TextRank("pl_core_news_sm", textrank_type, bias_words)
-    dicts = textRank.create_dicts_for_all_classes(
-        df_polemo_official,
-        len=max_number_of_keywords,
-        trainset_size=number_of_opinions,
-        join_oppinions=join_oppinions
-    )
+    if (polemo_category == "all_text"):
+        polemo_categories = ["hotels_text", "medicine_text", "products_text", "reviews_text"]
+    else:
+        polemo_categories = [polemo_category]
 
-    remove_word_from_dicts(dicts, "hotel")
-    remove_shared_words(dicts)
+    if (preprocessed == "all"):
+        preprocessing_categories = ["simple", "lemmatization"]  # TODO add 'spelling' when done
+    else:
+        preprocessing_categories = [preprocessed]
 
-    save_dicts_to_files(dicts, textrank_type + ("_joined" if join_oppinions else "_sep"))
+    if (preprocessed != "none"):
+        for category in polemo_categories:
+            for preprocessing_category in preprocessing_categories:
+                data = load_preprocessed_data(category, preprocessing_category)
+                textRank = TextRank("pl_core_news_sm", textrank_type, bias_words)
+                dicts = textRank.create_dicts_for_all_classes(
+                    data,
+                    len=max_number_of_keywords,
+                    trainset_size=number_of_opinions,
+                    join_oppinions=join_oppinions
+                )
+                save_dicts_to_files(dicts, f"{category}_{preprocessing_category}_textrank", "out/_textrank")
+                print(f"{category}_{preprocessing_category}_textrank done!")
+    else:
+        df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category)
+        print(df_polemo_official.head())
+        # df_polemo_official = load_preprocessed_data(polemo_category)
+
+        textRank = TextRank("pl_core_news_sm", textrank_type, bias_words)
+        dicts = textRank.create_dicts_for_all_classes(
+            df_polemo_official,
+            len=max_number_of_keywords,
+            trainset_size=number_of_opinions,
+            join_oppinions=join_oppinions
+        )
+
+        remove_word_from_dicts(dicts, "hotel")
+        remove_shared_words(dicts)
+
+        save_dicts_to_files(dicts, textrank_type + ("_joined" if join_oppinions else "_sep"))

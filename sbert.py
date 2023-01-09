@@ -53,16 +53,35 @@ if __name__=='__main__':
                             help="Other available: 'all_text', 'all_sentence', 'hotels_text', 'hotels_sentence', 'medicine_text', 'medicine_sentence', 'products_text', 'products_sentence', 'reviews_text', 'reviews_sentence'")
     parser.add_argument("--model", default='distilbert-base-nli-mean-tokens',
                             help="Other model: sentence-transformers/distiluse-base-multilingual-cased-v1, sentence-transformers/all-distilroberta-v1" )
+    parser.add_argument("--preprocessed", default="none",
+                        help="Choosing type of preprocessing. Available options: 'none', 'all', 'simple', 'lemmatization', 'spelling'") #TODO add note to readme file
     args = parser.parse_args()
 
+    if(args.polemo_category == "all_text"):
+        polemo_categories = ["hotels_text", "medicine_text", "products_text", "reviews_text"]
+    else:
+        polemo_categories = [args.polemo_category]
 
-    data = load_raw_data("data/polemo2-official/", args.polemo_category)
-    model = SentenceTransformer(args.model)          
-    keywords_dic = sbert(data, model)
+    if(args.preprocessed == "all"):
+        preprocessing_categories = ["simple", "lemmatization"] #TODO add 'spelling' when done
+    else:
+        preprocessing_categories = [args.preprocessed]
 
-    remove_word_from_dicts(keywords_dic, "hotel")
-    remove_shared_words(keywords_dic)
+    model = SentenceTransformer(args.model)
 
-    save_dicts_to_files(keywords_dic, "sbert")
-    sys.exit() 
+    if(args.preprocessed != "none"):
+        for category in polemo_categories:
+            for preprocessing_category in preprocessing_categories:
+                data = load_preprocessed_data(category,preprocessing_category)
+                keywords_dic = sbert(data, model)
+                save_dicts_to_files(keywords_dic, f"{category}_{preprocessing_category}_sbert", "out")
+                print(f"{category}_{preprocessing_category}_sbert done!")
+    else:
+        data = load_raw_data("data/polemo2-official/", args.polemo_category)
+        keywords_dic = sbert(data, model)
+        remove_word_from_dicts(keywords_dic, "hotel")
+        remove_shared_words(keywords_dic)
+        save_dicts_to_files(keywords_dic, "sbert", "out")
+
+    sys.exit()
     

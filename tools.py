@@ -3,9 +3,8 @@ from datasets import load_dataset
 import os
 
 
-def save_dicts_to_files(dicts: dict, prefix: str):
+def save_dicts_to_files(dicts: dict, prefix: str, directory: str):
     """dictionaries with keywords should be in form {class0: [keyword0, keyword1, ...], ...}"""
-    directory = "out"
     for sentiment in dicts:
         filename = f"{directory}/{prefix}_{sentiment}.txt"
         os.makedirs(directory, exist_ok=True)
@@ -20,8 +19,8 @@ def load_raw_data(data_path: str, data_category: str, traintest: str = "train"):
 
     return df_polemo_official
 
-def load_preprocessed_data(polemo_category: str):
-    return pd.read_csv(f"data/{polemo_category}_train_preprocessed.csv", sep=";", header=0)
+def load_preprocessed_data(polemo_category: str, preprocessing_category: str):
+    return pd.read_csv(f"data/{polemo_category}_train_{preprocessing_category}_preprocessed.csv", sep=";", header=0)
 
 def remove_word_from_dicts(dicts: dict, word: str):
     """ Remove obvious words from dicts (e.g. "hotel" from opinions about hotels) """
