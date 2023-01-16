@@ -1,10 +1,14 @@
+from audioop import bias
 from collections import Counter
+from telnetlib import X3PAD
+from sklearn.feature_extraction.text import CountVectorizer
 import sys
 import pandas as pd
 from textrank.noun_chunks_pl import noun_chunks_pl
 import spacy
 import pytextrank
 from tools import *
+from tfidf import tfidf
 
 # dependencies to_ install
 # !pip install pytextrank
@@ -12,8 +16,9 @@ from tools import *
 
 
 class TextRank:
-    def __init__(self, language_model: str, textrank_type: str = "textrank", bias_words: str = None):
-        self.bias_words = bias_words
+    bias_words = None
+
+    def __init__(self, language_model: str, textrank_type: str = "textrank"):
         self.nlp = spacy.load(language_model)
         spacy.lang.pl.PolishDefaults.syntax_iterators = {
             "noun_chunks": self._get_chunks
@@ -26,18 +31,27 @@ class TextRank:
     def _get_chunks(self, doc):
         return noun_chunks_pl(doc)
 
-
     def _get_keywords(
-        self, text: str, len=None
+        self, text: str, len: int = None, sentiment: int = None
     ) -> list:
         """Get keywords from text"""
         doc = self.nlp(text)
-        if bias_words is not None:
-            doc._.textrank.change_focus(focus=self.bias_words, bias=1.0, default_bias=0)
+        if self.bias_words:
+            doc._.textrank.change_focus(focus=self.bias_words[sentiment], bias=1.0, default_bias=0)
         keywords = [phrase.text for phrase in doc._.phrases]
         if len is not None:
             keywords = keywords[:len]
         return keywords
+
+    def _generate_bias_words(self, n: int, df: pd.DataFrame, grouped_text):
+        self.bias_words = {}
+
+        for target in df["target"].unique():
+            targeted = grouped_text.get_group(target)["text"].values
+            # Extract candidate words/phrases
+            count = CountVectorizer(lowercase=True, min_df=0.015, max_features=n, stop_words=self.nlp.Defaults.stop_words)\
+                    .fit(targeted)
+            self.bias_words[target] = " ".join(count.get_feature_names_out())
 
     def create_dicts_for_all_classes(
         self,
@@ -46,7 +60,8 @@ class TextRank:
         opinion_colname: str = "text",
         len: int = 25,  # maximum length of the keywords list
         trainset_size: int = None,  # use only for development purposes – shortens computation
-        join_oppinions=True  # create a long text from all oppinions with the same sentiment
+        join_oppinions: bool = True,  # create a long text from all oppinions with the same sentiment
+        bias_context_len: int = None,  # number of words generated for bias context
     ) -> dict:
         """ Create dictionaries with keywords for every oppinion class in df.
         Returns a dictionary in form {class0: [keyword0, keyword1, ...], ...} """
@@ -55,20 +70,31 @@ class TextRank:
             df_filtered = df[1:trainset_size]
         else:
             df_filtered = df.copy()
+        
+        grouped = df_filtered.groupby(target_colname)
+        
+        if "biasedtextrank" in self.nlp.pipe_names:
+            self._generate_bias_words(bias_context_len, df, grouped)
+
+        keywords = {}
         if join_oppinions:
             # join all oppinions in one text 
-            df_filtered = df_filtered.groupby(target_colname).sum(numeric_only=False)
-            print(df_filtered.head())
-            keywords = dict(df_filtered[opinion_colname].apply(self._get_keywords, len=len))
+            df_filtered = grouped.sum(numeric_only=False)
+            for sentiment in df[target_colname].unique():
+                keywords[sentiment] = self._get_keywords(
+                    df_filtered[opinion_colname][sentiment],
+                    len=len,
+                    sentiment=sentiment
+                )
+
         else:
             # create a dict for each oppinion and join them
-            keywords = dict()
             for sentiment in df[target_colname].unique():
                 df_filtered = df[df[target_colname] == sentiment]
                 this_sentiment_keywords = []
                 
                 for opinion in df_filtered[opinion_colname]:
-                    opinion_keywords = self._get_keywords(opinion, len=len)
+                    opinion_keywords = self._get_keywords(opinion, len=len, sentiment=sentiment)
                     this_sentiment_keywords += opinion_keywords
                 # get keywords which appear in the most oppinions
                 ct = Counter(this_sentiment_keywords)
@@ -82,29 +108,26 @@ if __name__ == "__main__":
     max_number_of_keywords = 100
     number_of_opinions = None
     join_oppinions = True
-    textrank_type = "textrank"  # textrank, positionrank, topicrank, biasedtextrank
-    words_for_bias = ["hotel", "pokój", "łazienka", "polecenie", "dobry", "straszny", "zły", "ładny"]
+    textrank_type = "biasedtextrank"  # textrank, positionrank, topicrank, biasedtextrank
     polemo_category = "hotels_text"  # only opinions about hotels
+    bias_context_len = 20  # length of the list generated for bias textrank with count vectorize 
     # available categories: 'all_text', 'all_sentence',
     # 'hotels_text', 'hotels_sentence', 'medicine_text', 'medicine_sentence',
     # 'products_text', 'products_sentence', 'reviews_text', 'reviews_sentence'
     # --------------------------------------------------------------------------
-   
-    bias_words = None if textrank_type != "biasedtextrank" else " ".join(words_for_bias)
-   
+      
     df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category)
-    print(df_polemo_official.head())
     # df_polemo_official = load_preprocessed_data(polemo_category)
 
-    textRank = TextRank("pl_core_news_sm", textrank_type, bias_words)
+    textRank = TextRank("pl_core_news_sm", textrank_type)
     dicts = textRank.create_dicts_for_all_classes(
         df_polemo_official,
         len=max_number_of_keywords,
         trainset_size=number_of_opinions,
-        join_oppinions=join_oppinions
+        join_oppinions=join_oppinions,
+        bias_context_len=bias_context_len
     )
 
-    remove_word_from_dicts(dicts, "hotel")
     remove_shared_words(dicts)
 
     save_dicts_to_files(dicts, textrank_type + ("_joined" if join_oppinions else "_sep"))
