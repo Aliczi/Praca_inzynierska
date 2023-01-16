@@ -15,6 +15,8 @@ from spellcorrectorpl.python.SpellCorrector import SpellCorrector
 import spacy
 from spacy.lang.pl.examples import sentences
 
+
+#!python -m spacy download pl_core_news_sm #TODO aby urchomić należy pobrać tę bazę
 nlp = spacy.load("pl_core_news_sm")
 lemmatizer = nlp.get_pipe("lemmatizer")
 
@@ -57,7 +59,7 @@ def preprocess(df: pd.DataFrame, path, option):
         oppinions["text"] = oppinions["text"].str.casefold()  # to lower
         oppinions["text"] = oppinions["text"].str.replace('[^łśćżźąęńóa-zA-Z\s\n\.]', '', regex=True)
         oppinions["text"] = oppinions["text"].str.replace(r'\s+', ' ', regex=True)  # remove quotation
-        for i in range(1183, len(oppinions["text"])):
+        for i in range(len(oppinions["text"])):
             if option == 2:
                 oppinions.at[i, "text"] = lemmatization(oppinions.at[i, "text"])
             if option == 3:

@@ -1,17 +1,17 @@
 neutralne: 97
 dobre: 97
 zle: 133
-132 / 327
-40.36697247706422 % poprawnie przypisanych 
-10 / 97
-10.309278350515463, % poprawnie przypisanych neutralnych 
+82 / 327
+25.076452599388375 % poprawnie przypisanych 
+18 / 97
+18.556701030927837, % poprawnie przypisanych neutralnych 
 48 / 97
 49.48453608247423, % poprawnie przypisanych dobrych 
-74 / 133
-55.639097744360896, % poprawnie przypisanych zlych 
+16 / 133
+12.030075187969924, % poprawnie przypisanych zlych 
  
 oryginalne\przypisane      Neutalne    Dobre    Zle
 -----------------------  ----------  -------  -----
-Neutralne                        10       44     43
-Dobre                            14       48     35
-Zle                              15       44     74
+Neutralne                        18       63     16
+Dobre                            33       48     16
+Zle                              36       81     16

@@ -4,7 +4,17 @@
 
 import pandas as pd
 import numpy as np
+import spacy
+import difflib
 from tabulate import tabulate
+
+def remove_shared_words_from_dictionary(dict1, dict2):
+    for word1 in dict1:
+        if word1 in dict2:
+            dict1.remove(word1)
+            dict2.remove(word1)
+    return dict1, dict2
+
 
 def import_slownik(nazwa_pliku):
     f = open(nazwa_pliku, "r")
@@ -14,6 +24,28 @@ def import_slownik(nazwa_pliku):
         slownik_tab.append(line.strip())
     f.close()
     return slownik_tab
+
+
+def similarity(w1, w2, treshhold):
+    w1_nlp = nlp(w1)
+    suma2 = 0
+    for i in range(len(w2) - len(w1.split()) + 1):
+        w2_help = w2[i:i + len(w1.split())]
+        w2_help = ' '.join(w2_help)
+        w2_help_nlp = nlp(w2_help)
+        if w2_help_nlp.similarity(w1_nlp) > treshhold:
+            return 1
+    return 0
+
+def diff(w1, w2, treshhold):
+    suma2 = 0
+    for i in range(len(w2) - len(w1.split()) + 1):
+        w2_help = w2[i:i + len(w1.split())]
+        w2_help = ' '.join(w2_help)
+        if difflib.SequenceMatcher(None, w2_help, w1).ratio() > treshhold:
+            return 1
+    return 0
+
 
 slownik = []
 
@@ -27,7 +59,7 @@ else:
     polemo_categories = [polemo_category]
 
 if (function == "all"):
-    functions = ["tfidf", "sbert", "textrank"]
+    functions = ["sbert", "tfidf", "textrank"]
 else:
     functions = [function]
 
@@ -36,53 +68,43 @@ if (preprocessed == "all"):
 else:
     preprocessing_categories = [preprocessed]
 
+nlp = spacy.load("pl_core_news_lg")
 
 for category in polemo_categories:
     for preprocessing_category in preprocessing_categories:
         for function in functions:
-            filename = f"out/out2/{category}_{preprocessing_category}_{function}.txt"
-            slownik = []
+            filename = f"out/out4/{category}_{preprocessing_category}_{function}.txt"
+            slownik_b=[]
+            slownik_g=[]
             with open(filename, "w", encoding="utf-8") as file:
                 for b in import_slownik(f"out/{function}/{category}_{preprocessing_category}_{function}_1.txt"):
-                    slownik.append([len(b),b,-1])
-
+                    slownik_b.append(b)
                 for g in import_slownik(f"out/{function}/{category}_{preprocessing_category}_{function}_2.txt"):
-                    slownik.append([len(g),g,1])
+                    slownik_g.append(g)
 
-                slownik = sorted(slownik, key=lambda x: x[0], reverse=True)
+                print(slownik_b)
+                print(slownik_g)
+                slownik_b,slownik_g = remove_shared_words_from_dictionary(slownik_b,slownik_g)
+                print(slownik_b)
+                print(slownik_g)
+
+                df = pd.read_csv(f'data/{category}_test_{preprocessing_category}_preprocessed.csv', sep=";", header=0)
 
                 lacznie_neutralne = 0
                 lacznie_dobre = 0
                 lacznie_zle = 0
-                lacznie_nieprzypisane = 0
-
-                df = pd.read_csv(f'data/{category}_test_{preprocessing_category}_preprocessed.csv', sep=";", header=0)
 
                 for index, row in df.iterrows():
-                    if row['target'] == 0:
+                    if row['target'] == 0 or row['target'] == 3:
                         lacznie_neutralne += 1
-                    elif row['target'] == 3:
-                        lacznie_nieprzypisane += 1
                     elif row['target'] == 2:
                         lacznie_dobre += 1
                     elif row['target'] == 1:
                         lacznie_zle += 1
 
-                lacznie_negatywne = lacznie_dobre + lacznie_nieprzypisane
-                lacznie_nienegatywne = lacznie_zle + lacznie_neutralne
-
-                lacznie_negatywne = lacznie_zle + lacznie_nieprzypisane
-                lacznie_nienegatywne = lacznie_dobre + lacznie_neutralne
-
-                file.write(f'Wszystkich opinii: {lacznie_negatywne+lacznie_nienegatywne}\n\n')
-
-                file.write(f'Pozytwyne: {lacznie_dobre}\n')
-                file.write(f'Niepozytwyne: {lacznie_neutralne}\n\n')
-
-                file.write(f'Negatywne: {lacznie_zle}\n')
-                file.write(f'Nienegatywne: {lacznie_nienegatywne}\n\n')
-
-
+                print('neutralne: ', lacznie_neutralne)
+                print('dobre: ', lacznie_dobre)
+                print('zle: ', lacznie_zle)
 
                 lacznie = 0
 
@@ -106,35 +128,37 @@ for category in polemo_categories:
                     sentyment_pozytywne = 0
                     sentyment_negatywnie = 0
                     zdanie = row['text']
-                    #print(zdanie)
+                    # print(zdanie)
                     sentyment_prawdziwy = row['target']
 
-                    for n in slownik:
-                        if n[1] in zdanie:
-                            if(n[2]==1):
-                                sentyment_pozytywne += zdanie.count(n[1])
-                            elif(n[2]==-1):
-                                sentyment_negatywnie += zdanie.count(n[1])
-                            #print(zdanie)
-                            zdanie = zdanie.replace(n[1], "")
-                            #print(zdanie)
+                    score = 0
+                    sumab = 0
+                    for words in slownik_b:
+                        sentyment_negatywnie += diff(words, row["text"].split(), 0.75)
+                    sumag = 0
+                    for words in slownik_g:
+                        sentyment_pozytywne += diff(words, row["text"].split(), 0.75)
 
-                    if sentyment_pozytywne >= 1 and (sentyment_prawdziwy == 2 or sentyment_prawdziwy == 3):
+                    threshold = len(row["text"].split())/20
+
+                    print(sentyment_pozytywne, sentyment_negatywnie, threshold)
+
+                    if sentyment_pozytywne >= threshold and (sentyment_prawdziwy == 2 or sentyment_prawdziwy == 3):
                         poprawne_dobre += 1
-                    elif sentyment_pozytywne == 0 and (sentyment_prawdziwy == 0 or sentyment_prawdziwy == 1):
+                    elif sentyment_pozytywne < threshold and (sentyment_prawdziwy == 0 or sentyment_prawdziwy == 1):
                         poprawne_neutralne_dobre += 1
-                    elif sentyment_pozytywne >= 1 and (sentyment_prawdziwy == 0 or sentyment_prawdziwy == 1):
+                    elif sentyment_pozytywne >= threshold and (sentyment_prawdziwy == 0 or sentyment_prawdziwy == 1):
                         neutralne_jako_dobre += 1
-                    elif sentyment_pozytywne == 0 and (sentyment_prawdziwy == 2 or sentyment_prawdziwy == 3):
+                    elif sentyment_pozytywne < threshold and (sentyment_prawdziwy == 2 or sentyment_prawdziwy == 3):
                         dobre_jako_neutralne += 1
 
-                    if sentyment_negatywnie >= 1 and (sentyment_prawdziwy == 1 or sentyment_prawdziwy == 3):
+                    if sentyment_negatywnie >= threshold and (sentyment_prawdziwy == 1 or sentyment_prawdziwy == 3):
                         poprawne_zle += 1
-                    elif sentyment_negatywnie == 0 and (sentyment_prawdziwy == 0 or sentyment_prawdziwy == 2):
+                    elif sentyment_negatywnie < threshold and (sentyment_prawdziwy == 0 or sentyment_prawdziwy == 2):
                         poprawne_neutralne_zle += 1
-                    elif sentyment_negatywnie >= 1 and (sentyment_prawdziwy == 0 or sentyment_prawdziwy == 2):
+                    elif sentyment_negatywnie >= threshold and (sentyment_prawdziwy == 0 or sentyment_prawdziwy == 2):
                         neutralne_jako_zle += 1
-                    elif sentyment_negatywnie == 0 and (sentyment_prawdziwy == 1 or sentyment_prawdziwy == 3):
+                    elif sentyment_negatywnie < threshold and (sentyment_prawdziwy == 1 or sentyment_prawdziwy == 3):
                         zle_jako_neutralne += 1
 
 
@@ -156,4 +180,3 @@ for category in polemo_categories:
                 file.write(tabulate([['Pozytywne', poprawne_dobre, neutralne_jako_dobre], ['Niepozytywne', dobre_jako_neutralne, poprawne_neutralne_dobre]], headers=['oryginalne\przypisane', 'Pozytywne', 'Niepozytywne']))
                 file.write("\n\n")
                 file.write(tabulate([['Negatywne', poprawne_zle, neutralne_jako_zle], ['Nienegatywne', zle_jako_neutralne, poprawne_neutralne_zle]], headers=['oryginalne\przypisane', 'Negatywne','Nienegatywne']))
-                print(file.name)
