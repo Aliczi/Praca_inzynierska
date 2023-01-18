@@ -51,8 +51,8 @@ if __name__=='__main__':
                     description = 'Keyword extraction using Sentence-BERT')
     parser.add_argument("--polemo_category", default="hotels_text",
                             help="Other available: 'all_text', 'all_sentence', 'hotels_text', 'hotels_sentence', 'medicine_text', 'medicine_sentence', 'products_text', 'products_sentence', 'reviews_text', 'reviews_sentence'")
-    parser.add_argument("--model", default='distilbert-base-nli-mean-tokens',
-                            help="Other model: sentence-transformers/distiluse-base-multilingual-cased-v1, sentence-transformers/all-distilroberta-v1" )
+    parser.add_argument("--model", default='sentence-transformers/distiluse-base-multilingual-cased-v1',
+                            help="Other model: microsoft/Multilingual-MiniLM-L12-H384, sentence-transformers/all-distilroberta-v1" )
     parser.add_argument("--preprocessed", default="none",
                         help="Choosing type of preprocessing. Available options: 'none', 'all', 'simple', 'lemmatization', 'spelling'") #TODO add note to readme file
     args = parser.parse_args()
