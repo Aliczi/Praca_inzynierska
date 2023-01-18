@@ -8,7 +8,6 @@ from textrank.noun_chunks_pl import noun_chunks_pl
 import spacy
 import pytextrank
 from tools import *
-from tfidf import tfidf
 
 # dependencies to_ install
 # !pip install pytextrank
@@ -105,10 +104,10 @@ class TextRank:
 
 if __name__ == "__main__":
     # --------------------------------------------------------------------------
-    max_number_of_keywords = 100
+    max_number_of_keywords = 4000
     number_of_opinions = None
     join_oppinions = True
-    textrank_type = "textrank"  # textrank, positionrank, topicrank, biasedtextrank
+    textrank_type = "all"  # textrank, positionrank, topicrank, biasedtextrank
     bias_context_len = 20  # length of the list generated for bias textrank with count vectorize
     preprocessed = "all"
     polemo_category = "all_text"  # only opinions about hotels
@@ -125,21 +124,26 @@ if __name__ == "__main__":
         preprocessing_categories = ["simple", "lemmatization"]  # TODO add 'spelling' when done
     else:
         preprocessing_categories = [preprocessed]
-
+    if textrank_type == "all":
+        models = ["textrank", "positionrank"] #TODO topicrank/biasedtextrank problems
+    else:
+        models = [textrank_type]
     if (preprocessed != "none"):
         for category in polemo_categories:
             for preprocessing_category in preprocessing_categories:
                 data = load_preprocessed_data(category, preprocessing_category)
-                textRank = TextRank("pl_core_news_sm", textrank_type)
-                dicts = textRank.create_dicts_for_all_classes(
-                    data,
-                    len=max_number_of_keywords,
-                    trainset_size=number_of_opinions,
-                    join_oppinions=join_oppinions,
-                    bias_context_len=bias_context_len
-                )
-                save_dicts_to_files(dicts, f"{category}_{preprocessing_category}_textrank", "out/textrank")
-                print(f"{category}_{preprocessing_category}_textrank done!")
+                for model in models:
+                    print(f"{category}_{preprocessing_category}_textrank_{model}_{max_number_of_keywords} beginning!")
+                    textRank = TextRank("pl_core_news_sm", model)
+                    dicts = textRank.create_dicts_for_all_classes(
+                        data,
+                        len=max_number_of_keywords,
+                        trainset_size=number_of_opinions,
+                        join_oppinions=join_oppinions,
+                        bias_context_len=bias_context_len
+                    )
+                    save_dicts_to_files(dicts, f"{category}_{preprocessing_category}_textrank_{model}_{max_number_of_keywords}", "out/textrank")
+                    print(f"{category}_{preprocessing_category}_textrank_{model}_{max_number_of_keywords} done!")
     else:
         df_polemo_official = load_raw_data("data/polemo2-official/", polemo_category)
         print(df_polemo_official.head())

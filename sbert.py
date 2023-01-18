@@ -67,18 +67,31 @@ if __name__=='__main__':
     else:
         preprocessing_categories = [args.preprocessed]
 
-    model = SentenceTransformer(args.model)
 
+    if args.model == "all":
+        models = ["sentence-transformers/distiluse-base-multilingual-cased-v1",  "microsoft/Multilingual-MiniLM-L12-H384", "sentence-transformers/all-distilroberta-v1"]
+    else:
+        models = [args.model]
+    print(models)
     if(args.preprocessed != "none"):
         for category in polemo_categories:
             for preprocessing_category in preprocessing_categories:
                 data = load_preprocessed_data(category,preprocessing_category)
-                keywords_dic = sbert(data, model)
-                save_dicts_to_files(keywords_dic, f"{category}_{preprocessing_category}_sbert", "out")
-                print(f"{category}_{preprocessing_category}_sbert done!")
+                for mod in models:
+                    print(mod)
+                    model = SentenceTransformer(mod)
+                    keywords_dic = sbert(data, model)
+                    if(mod == "sentence-transformers/distiluse-base-multilingual-cased-v1"):
+                        mod = "distiluse-base-multilingual-cased-v1"
+                    elif(mod == "microsoft/Multilingual-MiniLM-L12-H384"):
+                        mod = "Multilingual-MiniLM-L12-H384"
+                    else:
+                        mod = "all-distilroberta-v1"
+                    save_dicts_to_files(keywords_dic, f"{category}_{preprocessing_category}_sbert_{mod}_100", "out/sbert")
+                    print(f"{category}_{preprocessing_category}_sbert_{mod}_100 done!")
     else:
         data = load_raw_data("data/polemo2-official/", args.polemo_category)
-        keywords_dic = sbert(data, model)
+        keywords_dic = sbert(data, models[0])
         remove_word_from_dicts(keywords_dic, "hotel")
         remove_shared_words(keywords_dic)
         save_dicts_to_files(keywords_dic, "sbert", "out")
