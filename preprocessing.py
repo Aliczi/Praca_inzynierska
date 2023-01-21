@@ -76,9 +76,9 @@ def preprocess(df: pd.DataFrame, path, option):
     return oppinions
 
 
-option = 4  # 1 simple, 2 lemmatization, 3 spelling corrector
-files = 2  # 1 all, 2 hotels, 3 medicine, 4 products, 5 reviews
-train_or_test = 2  # 1 both, 2 train, 3 test
+option = 3  # 1 simple, 2 lemmatization, 3 spelling corrector
+files = 6  # 1 all, 2 hotels, 3 medicine, 4 products, 5 reviews
+train_or_test = 1  # 1 all, 2 train, 3 test, 4 validate
 
 if files == 1:
     categories = ["hotels_text", "medicine_text", "products_text", "reviews_text"]
@@ -91,12 +91,14 @@ elif files == 4:
 elif files == 5:
     categories = ["reviews_text"]
 else:
-    categories = []
+    categories = ["hotels_sentence", "medicine_sentence", "products_sentence", "reviews_sentence"]
 
 if train_or_test == 1:
-    data_sets = ["train", "test"]
+    data_sets = ["train", "test", "validation"]
 elif train_or_test == 2:
     data_sets = ["train"]
+elif train_or_test == 4:
+    data_sets = ["validation"]
 else:
     data_sets = ["test"]
 
