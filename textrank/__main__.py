@@ -34,7 +34,7 @@ class TextRank:
         self, text: str, len: int = None, sentiment: int = None
     ) -> list:
         """Get keywords from text"""
-        doc = self.nlp(text)
+        doc = self.nlp(str(text))
         if self.bias_words:
             doc._.textrank.change_focus(focus=self.bias_words[sentiment], bias=1.0, default_bias=0)
         keywords = [phrase.text for phrase in doc._.phrases]
@@ -48,7 +48,7 @@ class TextRank:
         for target in df["target"].unique():
             targeted = grouped_text.get_group(target)["text"].values
             # Extract candidate words/phrases
-            count = CountVectorizer(lowercase=True, min_df=0.015, max_features=n, stop_words=self.nlp.Defaults.stop_words)\
+            count = CountVectorizer(lowercase=True, min_df=0.015, max_features=n, stop_words=list(self.nlp.Defaults.stop_words))\
                     .fit(targeted)
             self.bias_words[target] = " ".join(count.get_feature_names_out())
 
@@ -107,16 +107,18 @@ if __name__ == "__main__":
     max_number_of_keywords = 4000
     number_of_opinions = None
     join_oppinions = True
-    textrank_type = "all"  # textrank, positionrank, topicrank, biasedtextrank
+    textrank_type = "biasedtextrank"  # textrank, positionrank, topicrank, biasedtextrank
     bias_context_len = 20  # length of the list generated for bias textrank with count vectorize
     preprocessed = "all"
-    polemo_category = "all_text"  # only opinions about hotels
+    polemo_category = "all_sentence"  # only opinions about hotels
     # available categories: 'all_text', 'all_sentence',
     # 'hotels_text', 'hotels_sentence', 'medicine_text', 'medicine_sentence',
     # 'products_text', 'products_sentence', 'reviews_text', 'reviews_sentence'
     # --------------------------------------------------------------------------
     if (polemo_category == "all_text"):
         polemo_categories = ["hotels_text", "medicine_text", "products_text", "reviews_text"]
+    elif(polemo_category == "all_sentence"):
+        polemo_categories = ["hotels_sentence", "medicine_sentence", "products_sentence", "reviews_sentence"]
     else:
         polemo_categories = [polemo_category]
 
@@ -125,7 +127,7 @@ if __name__ == "__main__":
     else:
         preprocessing_categories = [preprocessed]
     if textrank_type == "all":
-        models = ["textrank", "positionrank"] #TODO topicrank/biasedtextrank problems
+        models = ["textrank", "positionrank", "topicrank"] #TODO topicrank/biasedtextrank problems
     else:
         models = [textrank_type]
     if (preprocessed != "none"):
@@ -135,6 +137,10 @@ if __name__ == "__main__":
                 for model in models:
                     print(f"{category}_{preprocessing_category}_textrank_{model}_{max_number_of_keywords} beginning!")
                     textRank = TextRank("pl_core_news_sm", model)
+                    if (model == "topicrank"):
+                        join_oppinions = False
+                    else:
+                        join_oppinions = True
                     dicts = textRank.create_dicts_for_all_classes(
                         data,
                         len=max_number_of_keywords,
